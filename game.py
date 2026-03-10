@@ -6,26 +6,68 @@ class Player:
         self.x = 32*2
         self.y = 32*7
         self.image = 'playertmp'
+        self.idle_images = ['playertmp', 'playertmp_2']
+        self.move_images = ['playermove', 'playermove_2']
+        self.moving = False
+        self.move_target_x = self.x
+        self.move_target_y = self.y
+        self.move_speed = 2
+        self.move_cooldown = 0
+        self.cooldown_time = 0.2
 
     def move(self):
-        if keyboard.right:
-            self.x += 32
-        if keyboard.left:
-            self.x -= 32
-        if keyboard.up:
-            self.y -= 32
-        if keyboard.down:
-            self.y += 32
+        if self.move_cooldown > 0:
+            return
+        if not self.moving:
+            if keyboard.right and self.x + 32 < WIDTH:
+                self.move_target_x = self.x + 32
+                self.moving = True
+            elif keyboard.left and self.x - 32 >= 0:
+                self.move_target_x = self.x - 32
+                self.moving = True
+            elif keyboard.up and self.y - 32 >= 0:
+                self.move_target_y = self.y - 32
+                self.moving = True
+            elif keyboard.down and self.y + 32 < HEIGHT:
+                self.move_target_y = self.y + 32
+                self.moving = True
 
-    def update(self):
-        
+    def update(self,dt):
+        self.move_cooldown = max(0, self.move_cooldown - dt)
+        if self.moving:
+            if self.x < self.move_target_x:
+                self.x += self.move_speed
+                if self.x >= self.move_target_x:
+                    self.x = self.move_target_x
+                    self.finish_move()
+            elif self.x > self.move_target_x:
+                self.x -= self.move_speed
+                if self.x <= self.move_target_x:
+                    self.x = self.move_target_x
+                    self.finish_move()
+            elif self.y < self.move_target_y:
+                self.y += self.move_speed
+                if self.y >= self.move_target_y:
+                    self.y = self.move_target_y
+                    self.finish_move()
+            elif self.y > self.move_target_y:
+                self.y -= self.move_speed
+                if self.y <= self.move_target_y:
+                    self.y = self.move_target_y
+                    self.finish_move()
         self.move()
-    
+
+    def finish_move(self):
+        self.moving = False
+        self.move_cooldown = self.cooldown_time
+
     def draw(self):
         self.animation_counter += 1
         if self.animation_counter >= 5:
             self.animation_counter = 0
-            self.image = 'playertmp' if self.image == 'playertmp_2' else 'playertmp_2'
+            images = self.move_images if self.moving else self.idle_images
+            current_index = images.index(self.image) if self.image in images else 0
+            self.image = images[(current_index + 1) % len(images)]
         screen.blit(self.image, (self.x, self.y))
 
 class Game:
@@ -71,9 +113,9 @@ def toggle_music():
         game.music_play = True
         music.unpause()
 
-def update():
+def update(dt):
     if game.state == 'playing':
-        player.update()
+        player.update(dt)
 
 def on_key_down(key):
     if key == keys.SPACE:
