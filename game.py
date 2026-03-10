@@ -1,6 +1,73 @@
 import pgzrun
 import random
 
+class Enemy:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.image = 'enemy1tmp'
+        self.idle_images = ['enemy1tmp', 'enemy1tmp_2']
+        self.move_images = ['enemy1move', 'enemy1move_2']
+        self.moving = False
+        self.move_target_x = self.x
+        self.move_target_y = self.y
+        self.move_speed = 2
+        self.move_cooldown = random.uniform(0.5, 5.0)
+        self.cooldown_time = random.uniform(0.5, 5.0)
+
+    def update(self, dt):
+        self.move_cooldown = max(0, self.move_cooldown - dt)
+        if self.moving:
+            if self.x < self.move_target_x:
+                self.x += self.move_speed
+                if self.x >= self.move_target_x:
+                    self.x = self.move_target_x
+                    self.finish_move()
+            elif self.x > self.move_target_x:
+                self.x -= self.move_speed
+                if self.x <= self.move_target_x:
+                    self.x = self.move_target_x
+                    self.finish_move()
+            elif self.y < self.move_target_y:
+                self.y += self.move_speed
+                if self.y >= self.move_target_y:
+                    self.y = self.move_target_y
+                    self.finish_move()
+            elif self.y > self.move_target_y:
+                self.y -= self.move_speed
+                if self.y <= self.move_target_y:
+                    self.y = self.move_target_y
+                    self.finish_move()
+        else:
+            if self.move_cooldown <= 0:
+                self.choose_random_move()
+
+    def choose_random_move(self):
+        directions = [(32, 0), (-32, 0), (0, 32), (0, -32)]
+        random.shuffle(directions)
+        for dx, dy in directions:
+            new_x = self.x + dx
+            new_y = self.y + dy
+            if 0 <= new_x < WIDTH and 0 <= new_y < HEIGHT:
+                if not (new_x == player.x and new_y == player.y):
+                    self.move_target_x = new_x
+                    self.move_target_y = new_y
+                    self.moving = True
+                    break
+
+    def finish_move(self):
+        self.moving = False
+        self.move_cooldown = self.cooldown_time
+
+    def draw(self):
+        self.animation_counter = getattr(self, 'animation_counter', 0) + 1
+        if self.animation_counter >= 5:
+            self.animation_counter = 0
+            images = self.move_images if self.moving else self.idle_images
+            current_index = images.index(self.image) if self.image in images else 0
+            self.image = images[(current_index + 1) % len(images)]
+        screen.blit(self.image, (self.x, self.y))
+
 class Player:
     def __init__(self):
         self.animation_counter = 0
@@ -17,6 +84,7 @@ class Player:
         self.cooldown_time = 0.2
         self.rat_enemy = Actor('enemy1tmp')
         self.rat_idle_images = ['enemy1tmp', 'enemy1tmp_2']
+        self.rat_move_images = ['enemy1move', 'enemy1move_2']
         self.rat_enemy.x = 32*random.randint(5, 8)
         self.rat_enemy.y = 32*random.randint(5, 8)
         self.rat_enemy2 = Actor('enemy1tmp')
@@ -24,12 +92,14 @@ class Player:
         self.rat_enemy2.y = 32*random.randint(5, 8)
         self.elf_enemy = Actor('enemy2tmp')
         self.elf_idle_images = ['enemy2tmp', 'enemy2tmp_2']
+        self.elf_move_images = ['enemy2move', 'enemy2move_2']
         self.elf_enemy.x = 32*random.randint(5, 8)
         self.elf_enemy.y = 32*random.randint(5, 8)
         self.elf_enemy2 = Actor('enemy2tmp')
         self.elf_enemy2.x = 32*random.randint(5, 8)
         self.elf_enemy2.y = 32*random.randint(5, 8)
         self.mage_idle_images = ['bosstmp', 'bosstmp_2']
+        self.mage_move_images = ['bossmove', 'bossmove_2']
         self.mage_enemy = Actor('bosstmp')
         self.mage_enemy.x = 32*random.randint(5, 8)
         self.mage_enemy.y = 32*random.randint(5, 8)
@@ -94,8 +164,9 @@ class Game:
         self.music_play = True
         self.music_pos = 0
         self.volume = 0.05
-        music.set_volume(self.volume)
         music.play('music')
+        music.set_volume(self.volume)
+        
         self.state = 'menu'
 
 game = Game()
@@ -116,7 +187,8 @@ buttons = [
 def draw():
     screen.fill((128, 0, 0))
     if game.state == 'menu':
-        for button in buttons:
+
+        for button in buttons[:-1]:
             screen.draw.rect(button['rect'], (255, 255, 255))
             screen.draw.text(button['text'], center=button['rect'].center, fontsize=30, color=(0, 0, 0))
 
@@ -125,6 +197,13 @@ def draw():
             for y in range(0, HEIGHT, 32):
                 screen.draw.rect(Rect(x, y, 32, 32), (0,0,0))
         player.draw()
+    
+    if game.state == 'tutorial':
+
+        screen.draw.text("todo", (50, 50), fontsize=30, color=(255,255,255))
+        back = buttons[-1]
+        screen.draw.rect(back['rect'], (255, 255, 255))
+        screen.draw.text(back['text'], center=back['rect'].center, fontsize=30, color=(0, 0, 0))
         
 def toggle_music():
     if game.music_play:
@@ -145,7 +224,7 @@ def on_key_down(key):
 
 def on_mouse_down(pos):
     if game.state == 'menu':
-        for button in buttons:
+        for button in buttons[:-1]:
             if button['rect'].collidepoint(pos):
                 if button['action'] == 'start':
                     game.state = 'playing'
@@ -155,9 +234,10 @@ def on_mouse_down(pos):
                     exit()
                 elif button['action'] == 'tutorial':
                     game.state = 'tutorial'
-    if game.state == 'tutorial':
-        if button['rect'].collidepoint(pos):
-            if button['action'] == 'powrot':
+    elif game.state == 'tutorial':
+        back = buttons[-1]
+        if back['rect'].collidepoint(pos):
+            if back['action'] == 'powrot':
                 game.state = 'menu'
 pgzrun.go()
 
