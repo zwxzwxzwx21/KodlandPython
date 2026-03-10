@@ -13,9 +13,8 @@ class Game:
 game = Game()
 
 WIDTH = 800
-HEIGHT = 600
+HEIGHT = 608
 
-# Definicje przycisków
 buttons = [
     {'rect': Rect(300, 200, 200, 50), 'text': 'Rozpocznij gre', 'action': 'start'},
     {'rect': Rect(300, 270, 200, 50), 'text': 'Przelacz muzyke', 'action': 'toggle_music'},
@@ -29,7 +28,9 @@ def draw():
             screen.draw.rect(button['rect'], (255, 255, 255))
             screen.draw.text(button['text'], center=button['rect'].center, fontsize=30, color=(0, 0, 0))
     if game.state == 'playing':
-        screen.draw.text("granie", center=(WIDTH//2, HEIGHT//2), fontsize=40, color=(255, 255, 255))
+        for x in range(0, WIDTH, 32):
+            for y in range(0, HEIGHT, 32):
+                screen.draw.rect(Rect(x, y, 32, 32), (0,0,0))
 
 def toggle_music():
     if game.music_play:
@@ -50,7 +51,6 @@ def on_mouse_down(pos):
             if button['rect'].collidepoint(pos):
                 if button['action'] == 'start':
                     game.state = 'playing'
-                    print("gra rozpoczeta")
                 elif button['action'] == 'toggle_music':
                     toggle_music()
                 elif button['action'] == 'exit':
@@ -61,14 +61,8 @@ pgzrun.go()
 
 """
 
-Wyjątek: MOŻESZ użyć klasy Rect z PyGame.
 
-Roguelike 
 
-menu główne, z następującymi przyciskami:
-Rozpocznij grę
-Przełącz muzykę Wyłączoną/Włączoną
-Wyjście
 
 Gra zawiera zarówno muzykę w tle, jak i efekty dźwiękowe
 
@@ -93,4 +87,14 @@ w której wszystkie obiekty i postacie są umieszczone w komórkach świata gry 
 Ruch postaci między komórkami powinien być płynny i animowany.
 
 
+Wyjątek: MOŻESZ użyć klasy Rect z PyGame.
+
+Roguelike 
+
+zrobione :
+
+menu główne, z następującymi przyciskami:
+Rozpocznij grę
+Przełącz muzykę Wyłączoną/Włączoną
+Wyjście
 """
