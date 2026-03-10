@@ -1,4 +1,5 @@
 import pgzrun
+from pygame import Rect
 
 class Game:
     def __init__(self):
@@ -7,14 +8,28 @@ class Game:
         self.volume = 0.05
         music.set_volume(self.volume)
         music.play('music')
+        self.state = 'menu'
 
 game = Game()
 
 WIDTH = 800
 HEIGHT = 600
 
+# Definicje przycisków
+buttons = [
+    {'rect': Rect(300, 200, 200, 50), 'text': 'Rozpocznij gre', 'action': 'start'},
+    {'rect': Rect(300, 270, 200, 50), 'text': 'Przelacz muzyke', 'action': 'toggle_music'},
+    {'rect': Rect(300, 340, 200, 50), 'text': 'Wyjscie', 'action': 'exit'}
+]
+
 def draw():
     screen.fill((128, 0, 0))
+    if game.state == 'menu':
+        for button in buttons:
+            screen.draw.rect(button['rect'], (255, 255, 255))
+            screen.draw.text(button['text'], center=button['rect'].center, fontsize=30, color=(0, 0, 0))
+    if game.state == 'playing':
+        screen.draw.text("granie", center=(WIDTH//2, HEIGHT//2), fontsize=40, color=(255, 255, 255))
 
 def toggle_music():
     if game.music_play:
@@ -28,6 +43,18 @@ def toggle_music():
 def on_key_down(key):
     if key == keys.SPACE:
         toggle_music()
+
+def on_mouse_down(pos):
+    if game.state == 'menu':
+        for button in buttons:
+            if button['rect'].collidepoint(pos):
+                if button['action'] == 'start':
+                    game.state = 'playing'
+                    print("gra rozpoczeta")
+                elif button['action'] == 'toggle_music':
+                    toggle_music()
+                elif button['action'] == 'exit':
+                    exit()
 
 pgzrun.go()
 
