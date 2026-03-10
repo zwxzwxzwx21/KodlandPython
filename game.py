@@ -1,4 +1,5 @@
 import pgzrun
+import random
 
 class Player:
     def __init__(self):
@@ -14,6 +15,24 @@ class Player:
         self.move_speed = 2
         self.move_cooldown = 0
         self.cooldown_time = 0.2
+        self.rat_enemy = Actor('enemy1tmp')
+        self.rat_idle_images = ['enemy1tmp', 'enemy1tmp_2']
+        self.rat_enemy.x = 32*random.randint(5, 8)
+        self.rat_enemy.y = 32*random.randint(5, 8)
+        self.rat_enemy2 = Actor('enemy1tmp')
+        self.rat_enemy2.x = 32*random.randint(5, 8) 
+        self.rat_enemy2.y = 32*random.randint(5, 8)
+        self.elf_enemy = Actor('enemy2tmp')
+        self.elf_idle_images = ['enemy2tmp', 'enemy2tmp_2']
+        self.elf_enemy.x = 32*random.randint(5, 8)
+        self.elf_enemy.y = 32*random.randint(5, 8)
+        self.elf_enemy2 = Actor('enemy2tmp')
+        self.elf_enemy2.x = 32*random.randint(5, 8)
+        self.elf_enemy2.y = 32*random.randint(5, 8)
+        self.mage_idle_images = ['bosstmp', 'bosstmp_2']
+        self.mage_enemy = Actor('bosstmp')
+        self.mage_enemy.x = 32*random.randint(5, 8)
+        self.mage_enemy.y = 32*random.randint(5, 8)
 
     def move(self):
         if self.move_cooldown > 0:
@@ -82,13 +101,16 @@ class Game:
 game = Game()
 player = Player()
 
+
 WIDTH = 800
 HEIGHT = 608
 
 buttons = [
     {'rect': Rect(300, 200, 200, 50), 'text': 'Rozpocznij gre', 'action': 'start'},
     {'rect': Rect(300, 270, 200, 50), 'text': 'Przelacz muzyke', 'action': 'toggle_music'},
-    {'rect': Rect(300, 340, 200, 50), 'text': 'Wyjscie', 'action': 'exit'}
+    {'rect': Rect(300, 340, 200, 50), 'text': 'Wyjscie', 'action': 'exit'},
+    {'rect': Rect(300, 410, 200, 50), 'text': 'Jak grac', 'action': 'tutorial'},
+    {'rect': Rect(300, 400, 200, 50), 'text': 'Powrot do main menu', 'action': 'powrot'},
 ]
 
 def draw():
@@ -131,7 +153,12 @@ def on_mouse_down(pos):
                     toggle_music()
                 elif button['action'] == 'exit':
                     exit()
-
+                elif button['action'] == 'tutorial':
+                    game.state = 'tutorial'
+    if game.state == 'tutorial':
+        if button['rect'].collidepoint(pos):
+            if button['action'] == 'powrot':
+                game.state = 'menu'
 pgzrun.go()
 
 
