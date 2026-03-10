@@ -1,5 +1,32 @@
 import pgzrun
-from pygame import Rect
+
+class Player:
+    def __init__(self):
+        self.animation_counter = 0
+        self.x = 32*2
+        self.y = 32*7
+        self.image = 'playertmp'
+
+    def move(self):
+        if keyboard.right:
+            self.x += 32
+        if keyboard.left:
+            self.x -= 32
+        if keyboard.up:
+            self.y -= 32
+        if keyboard.down:
+            self.y += 32
+
+    def update(self):
+        
+        self.move()
+    
+    def draw(self):
+        self.animation_counter += 1
+        if self.animation_counter >= 5:
+            self.animation_counter = 0
+            self.image = 'playertmp' if self.image == 'playertmp_2' else 'playertmp_2'
+        screen.blit(self.image, (self.x, self.y))
 
 class Game:
     def __init__(self):
@@ -11,6 +38,7 @@ class Game:
         self.state = 'menu'
 
 game = Game()
+player = Player()
 
 WIDTH = 800
 HEIGHT = 608
@@ -27,11 +55,13 @@ def draw():
         for button in buttons:
             screen.draw.rect(button['rect'], (255, 255, 255))
             screen.draw.text(button['text'], center=button['rect'].center, fontsize=30, color=(0, 0, 0))
+
     if game.state == 'playing':
         for x in range(0, WIDTH, 32):
             for y in range(0, HEIGHT, 32):
                 screen.draw.rect(Rect(x, y, 32, 32), (0,0,0))
-
+        player.draw()
+        
 def toggle_music():
     if game.music_play:
         game.music_play = False
@@ -40,6 +70,10 @@ def toggle_music():
     else:
         game.music_play = True
         music.unpause()
+
+def update():
+    if game.state == 'playing':
+        player.update()
 
 def on_key_down(key):
     if key == keys.SPACE:
