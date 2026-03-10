@@ -1,28 +1,33 @@
 import pgzrun
 
-alien = Actor("alien")
-#alien.pos = 100, 56
+class Game:
+    def __init__(self):
+        self.music_play = True
+        self.music_pos = 0
+        self.volume = 0.05
+        music.set_volume(self.volume)
+        music.play('music')
+
+game = Game()
 
 WIDTH = 800
 HEIGHT = 600
-music.play('music')
-music_pos = 0
-music.set_volume(0.05)
 
 def draw():
     screen.fill((128, 0, 0))
-    alien.draw()
+
+def toggle_music():
+    if game.music_play:
+        game.music_play = False
+        game.music_pos = music.get_pos() / 1000
+        music.pause()
+    else:
+        game.music_play = True
+        music.unpause()
 
 def on_key_down(key):
     if key == keys.SPACE:
         toggle_music()
-
-def toggle_music():
-    if music.is_playing:
-        music_pos = music.get_pos() / 1000
-        music.stop()
-    else:
-        music.play('music', start=music_pos)
 
 pgzrun.go()
 
